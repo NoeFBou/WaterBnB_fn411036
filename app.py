@@ -10,6 +10,7 @@ from flask import render_template
 from flask_mqtt import Mqtt
 from flask_pymongo import PyMongo
 from pymongo import MongoClient
+from pymongo.server_api import ServerApi
 
 ADMIN = True  # Faut être ADMIN/mongo pour écrire dans la base
 uri = "mongodb+srv://noe:Lgngh4i4r6cluHHp@waterbnb.ti26c.mongodb.net/?retryWrites=true&w=majority&appName=WaterBnB"

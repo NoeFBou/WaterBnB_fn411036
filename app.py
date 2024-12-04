@@ -12,7 +12,7 @@ from flask_pymongo import PyMongo
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 
-ADMIN = True  # Faut être ADMIN/mongo pour écrire dans la base
+ADMIN = False  # Faut être ADMIN/mongo pour écrire dans la base
 uri = "mongodb+srv://noe:kbkqq3942RSWYGX@waterbnb.ti26c.mongodb.net/?retryWrites=true&w=majority&appName=WaterBnB"
 # Create a new client and connect to the  test
 client = MongoClient(uri, server_api=ServerApi('1'))

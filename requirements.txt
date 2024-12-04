@@ -2,4 +2,3 @@ Flask
 Gunicorn
 flask-mqtt
 flask-pymongo
-dotenv

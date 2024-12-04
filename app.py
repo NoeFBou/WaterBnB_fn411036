@@ -14,7 +14,7 @@ from pymongo.server_api import ServerApi
 
 ADMIN = True  # Faut être ADMIN/mongo pour écrire dans la base
 uri = "mongodb+srv://noe:<db_password>@waterbnb.ti26c.mongodb.net/?retryWrites=true&w=majority&appName=WaterBnB"
-# Create a new client and connect to the server
+# Create a new client and connect to the  test
 client = MongoClient(uri, server_api=ServerApi('1'))
 # -----------------------------------------------------------------------------
 # Looking for "WaterBnB" database in the cluster

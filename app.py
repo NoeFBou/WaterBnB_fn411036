@@ -1,7 +1,6 @@
 import json
 import csv
 import os
-from dotenv import load_dotenv
 
 from flask import request
 from flask import jsonify

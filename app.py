@@ -18,7 +18,7 @@ from pymongo.server_api import ServerApi
 # Paramètres d’accès MongoDB Atlas (Render va injecter la variable d’env)
 password = os.environ.get("mongoDBpass") 
 
-ADMIN = True  # Pour autoriser le script à insérer la liste des users en base
+ADMIN = False  # Pour autoriser le script à insérer la liste des users en base
 
 uri = f"mongodb+srv://noe:{password}@waterbnb.ti26c.mongodb.net/?retryWrites=true&w=majority&appName=WaterBnB"
 

@@ -2,3 +2,5 @@ Flask
 Gunicorn
 flask-mqtt
 flask-pymongo
+pymongo
+dnspython

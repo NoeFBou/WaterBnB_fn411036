@@ -1,6 +1,7 @@
 import json
 import csv
 import os
+import atexit
 import datetime
 from datetime import datetime
 from flask import request, redirect, url_for
@@ -8,11 +9,13 @@ from flask import jsonify
 from flask import Flask
 from flask import session
 from flask import render_template
+from datetime import datetime, timedelta
 
 from flask_mqtt import Mqtt
 from flask_pymongo import PyMongo
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
+from flask_apscheduler import APScheduler
 
 # -----------------------------------------------------------------------------
 # Paramètres d’accès MongoDB Atlas (Render va injecter la variable d’env)
@@ -72,6 +75,77 @@ app.config['MQTT_TLS_ENABLED'] = False
 
 mqtt_client = Mqtt(app)
 topicname = "uca/iot/piscine"
+
+# ====================
+#   CONFIG APSCHEDULER
+# ====================
+class Config:
+    SCHEDULER_API_ENABLED = True
+
+app.config.from_object(Config())
+collname_telemetry = 'telemetry'
+telemetry_collection = db[collname_telemetry]
+scheduler = APScheduler()
+scheduler.init_app(app)
+def release_expired_pools():
+    """
+    Parcourir les piscines occupées et les locations "en cours".
+    Si l'heure actuelle dépasse l'heure de fin prévue => on libère la piscine.
+    """
+    print("[Scheduler] Vérification des locations expirées...")
+    now = datetime.now()
+
+    # 1) Trouver toutes les locations dont end=None (ou un champ similaire)
+    #    et qui ont un end_time < now
+    ongoing_usages = usagecollection.find({"end": None})  # ex. "end" pas encore renseigné
+    for usage in ongoing_usages:
+        end_time = usage.get("end_time", None)  # on suppose qu'on a stocké "end_time"
+        if end_time and end_time <= now:
+            # => la location est expirée, on met à jour "end" pour dire que c'est terminé
+            usage_id = usage["_id"]
+            pool_id = usage["pool_id"]
+
+            usagecollection.update_one(
+                {"_id": usage_id},
+                {
+                    "$set": {
+                        "end": end_time  # ou "end": now, selon ce que vous préférez
+                    }
+                }
+            )
+            # 2) Mettre à jour la piscine pour la libérer
+            poolscollection.update_one(
+                {"pool_id": pool_id},
+                {
+                    "$set": {
+                        "occupied": False,
+                        "start_occupied_time": None,
+                        "occupied_time": 0,
+                        "user_name": None
+                    }
+                }
+            )
+            ''' 
+            # Eventuellement, publier un message MQTT (LED bleue ou éteinte, etc.)
+            mqtt_client.publish(
+                topicname,
+                json.dumps({"info": {"ident": pool_id},
+                            "status": {"led": "off", "occupied": False}})
+            )'''
+
+            print(f"[Scheduler] Libération auto: Piscine {pool_id} libérée.")
+
+# On planifie la tâche toutes les minutes (configurable)
+scheduler.add_job(
+    id='release_expired_pools_job',
+    func=release_expired_pools,
+    trigger='interval',
+    seconds=60
+)
+
+scheduler.start()
+# Pour terminer proprement le scheduler à l'extinction de l'app
+atexit.register(lambda: scheduler.shutdown())
 
 # -----------------------------------------------------------------------------
 @app.route('/')
@@ -244,6 +318,7 @@ def openthedoor():
             # => on met à jour la piscine en "occupied"
             # => on enregistre l'occupation dans usagecollection
             start_time = datetime.now()
+            end_time = start_time + timedelta(minutes=duration_minutes)
 
             # On met à jour la piscine
             poolscollection.update_one(
@@ -263,6 +338,7 @@ def openthedoor():
                 "pool_id": idswp,
                 "start": start_time,
                 "end": None,  # on complètera à la libération
+                "end_time": end_time,
                 "duration_minutes": duration_minutes,
                 "price": price
             }
@@ -310,35 +386,6 @@ def openthedoor():
             return render_template("open.html",
                                    scenario="error",
                                    message="Action de formulaire inconnue.")
-
-@app.route("/cleanup")
-def cleanup():
-    now = datetime.now()
-
-    ongoing_usages = usagecollection.find({"end": None})
-    nb_released = 0
-    for usage in ongoing_usages:
-        end_time = usage.get("end_time", None)
-        if end_time and end_time <= now:
-            usage_id = usage["_id"]
-            pool_id = usage["pool_id"]
-
-            usagecollection.update_one(
-                {"_id": usage_id},
-                {"$set": {"end": end_time}}
-            )
-            poolscollection.update_one(
-                {"pool_id": pool_id},
-                {"$set": {
-                    "occupied": False,
-                    "start_occupied_time": None,
-                    "occupied_time": 0,
-                    "user_name": None
-                }}
-            )
-            nb_released += 1
-
-    return f"Cleanup done. {nb_released} piscines libérées."
 
 # -----------------------------------------------------------------------------
 @app.route("/users")
@@ -413,7 +460,7 @@ def handle_mqtt_message(client, userdata, msg):
     Décode les messages MQTT venant des ESP32.
     """
     decoded_message = msg.payload.decode("utf-8")
-    print(decoded_message)
+    #print(decoded_message)
     try:
         dic = json.loads(decoded_message)
     except Exception as e:
@@ -427,6 +474,16 @@ def handle_mqtt_message(client, userdata, msg):
     temperature = dic.get("status", {}).get("temperature", 0)
     light = dic.get("status", {}).get("light", 0)
 
+    now = datetime.now()
+
+    telemetry_doc = {
+        "pool_id": pool_id,
+        "timestamp": now,
+        "temperature": temperature,
+        "light": light,
+        "hotspot": hotspot
+    }
+    telemetry_collection.insert_one(telemetry_doc)
     # Récupérer la piscine en base
     pool_doc = poolscollection.find_one({"pool_id": pool_id})
     if not pool_doc:
@@ -450,7 +507,7 @@ def handle_mqtt_message(client, userdata, msg):
         print(f"[MQTT] Piscine {pool_id} ajoutée dans la base.")
         return
     else:
-        print(f"[MQTT] Piscine {pool_id} trouvée dans la base.")
+        #print(f"[MQTT] Piscine {pool_id} trouvée dans la base.")
         temperature_data = pool_doc.get("temperature_data", [])
         temperature_data.append(temperature)
         light_data = pool_doc.get("light_data", [])

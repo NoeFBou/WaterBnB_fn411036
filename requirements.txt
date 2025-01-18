@@ -4,3 +4,4 @@ flask-mqtt
 flask-pymongo
 pymongo
 dnspython
+APScheduler

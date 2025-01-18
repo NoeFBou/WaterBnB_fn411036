@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<!-- Noe Florence-->
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Pool Reservation</title>
+    <!-- FontAwesome -->
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+    <!-- Bootstrap CSS -->
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+</head>
+<body id="page-top">
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-secondary text-uppercase fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand" href="#page-top">Pool Reservation Page</a>
+    </div>
+</nav>
+
+<!-- Header -->
+<header class="masthead bg-primary text-white text-center py-5 mt-5">
+    <div class="container d-flex align-items-center flex-column mt-5">
+        <img class="masthead-avatar mb-3" src="{{ url_for('static', filename='assets/img/avataaars.svg') }}" alt="Avatar" style="width: 20rem;" />
+        <h1 class="masthead-heading text-uppercase mb-0">Pool Reservation</h1>
+    </div>
+</header>
+
+<!-- SCENARIOS -->
+{% if scenario == "pool_not_found" %}
+<section class="page-section bg-dark text-white py-5" id="network">
+    <div class="container">
+        <h2 class="text-center">No Swimming Pool Found</h2>
+        <div class="divider-custom divider-light">
+            <div class="divider-custom-line"></div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white text-center">
+                        <h4>Error</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead text-center text-danger">
+                            The pool with ID <strong>{{ idswp }}</strong> does not exist.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% elif scenario == "user_not_found" %}
+<section class="page-section bg-light text-dark py-5" id="config">
+    <div class="container">
+        <h2 class="text-center">User Does Not Exist</h2>
+        <div class="divider-custom divider-light">
+            <div class="divider-custom-line"></div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white text-center">
+                        <h4>Error</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead text-center text-danger">
+                            The user <strong>{{ idu }}</strong> does not exist in the database.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider-custom">
+            <div class="divider-custom-line"></div>
+        </div>
+        <div class="row justify-content-center text-black">
+            <div class="col-md-6 mb-4 text-center">
+                <p class="lead fw-bold fs-4">Would you like to register it?</p>
+            </div>
+        </div>
+        <form method="POST">
+            <div class="form-floating mb-3">
+                <input class="form-control" type="hidden" name="action" value="create_user"/>
+            </div>
+            <div class="form-floating mb-3">
+                <input class="form-control" type="hidden" name="idu" value="{{ idu }}" />
+            </div>
+            <div class="form-floating mb-3">
+                <input class="form-control" type="hidden" name="idswp" value="{{ idswp }}" />
+            </div>
+            <div class="d-flex justify-content-center">
+                <button class="btn btn-primary btn-xl my-4" type="submit">Create User</button>
+            </div>
+        </form>
+
+    </div>
+</section>
+
+{% elif scenario == "pool_busy" %}
+<section class="page-section bg-light text-dark py-5" id="pool-busy">
+    <div class="container">
+        <!-- Title -->
+        <h2 class="text-center">Busy Swimming Pool</h2>
+        <div class="divider-custom divider-light">
+            <div class="divider-custom-line"></div>
+        </div>
+
+        <!-- Box for the occupied pool message -->
+        <div class="alert alert-danger text-center mx-auto" style="max-width: 600px;">
+            <p class="mb-0">
+                The pool <strong>{{ idswp }}</strong> is currently occupied.
+            </p>
+        </div>
+
+        {% if time_left %}
+            <!-- Box for the timer -->
+            <div class="card mx-auto mt-4 text-center" style="max-width: 400px; border: 1px solid #ccc; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <div class="card-body">
+                    <!-- Icon for the timer -->
+                    <i class="fas fa-stopwatch fa-3x text-secondary mb-3"></i>
+                    <h5 class="card-title">Estimated Remaining Time</h5>
+                    <p class="card-text">
+                        <span id="timer" class="text-danger fs-4"></span>
+                    </p>
+                </div>
+            </div>
+            <script>
+                // time_left is in minutes from Python
+                var timeLeft = {{ time_left|int }} * 60; // Convert to seconds
+                function updateTimer() {
+                    if (timeLeft <= 0) {
+                        document.getElementById("timer").innerHTML = "0 min 0 s";
+                    } else {
+                        var minutes = Math.floor(timeLeft / 60);
+                        var seconds = Math.floor(timeLeft % 60);
+                        document.getElementById("timer").innerHTML = minutes + " min " + seconds + " s";
+                        timeLeft--;
+                        setTimeout(updateTimer, 1000);
+                    }
+                }
+                updateTimer();
+            </script>
+        {% else %}
+            <!-- Box for unavailable timer -->
+            <div class="alert alert-warning text-center mx-auto mt-4" style="max-width: 600px;">
+                <p class="mb-0">We do not have the remaining time available.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+
+{% elif scenario == "pool_free" %}
+<section class="page-section bg-light text-dark py-5" id="pool-free">
+    <div class="container">
+
+
+
+ <h2 class="text-center">The Swimming Pool <strong>{{ idswp }}</strong> is Free!</h2>
+    <div class="divider-custom divider-light">
+        <div class="divider-custom-line"></div>
+    </div>
+    <!-- Row for main details -->
+        <div class="row justify-content-center text-black">
+
+
+            <!-- User Info -->
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <i class="fas fa-user"></i> User
+                    </div>
+                    <div class="card-body">
+                        <p>User: <strong>{{ user_doc.name }}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <div class="row justify-content-center text-black">
+    <!-- Hotspot -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-wifi"></i> Hotspot
+            </div>
+            <div class="card-body">
+                <span>{{ hotspot }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Average Temperature -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <i class="fas fa-thermometer-half"></i> Average Temperature
+            </div>
+            <div class="card-body">
+                <span>{{ avg_temp }} °C</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Average Luminosity -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <i class="fas fa-sun"></i> Average Luminosity
+            </div>
+            <div class="card-body">
+                <span>{{ avg_light }} lux</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pool Owner -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-user"></i> Pool Owner
+            </div>
+            <div class="card-body">
+                <span>{{ pool_owner }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Minimum Temperature -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <i class="fas fa-temperature-low"></i> Min Temperature
+            </div>
+            <div class="card-body">
+                <span>{{ min_temp }} °C</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maximum Temperature -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-temperature-high"></i> Max Temperature
+            </div>
+            <div class="card-body">
+                <span>{{ max_temp }} °C</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Minimum Luminosity -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-light text-dark">
+                <i class="fas fa-lightbulb"></i> Min Luminosity
+            </div>
+            <div class="card-body">
+                <span>{{ min_light }} lux</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maximum Luminosity -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header bg-dark text-white">
+                <i class="fas fa-lightbulb"></i> Max Luminosity
+            </div>
+            <div class="card-body">
+                <span>{{ max_light }} lux</span>
+            </div>
+        </div>
+    </div>
+</div>
+    </div>
+</section>
+<section class="page-section bg-primary text-light py-5" id="book-pool">
+    <div class="container">
+        <!-- Section Title -->
+        <h3 class="text-center">Book the Pool</h3>
+        <div class="divider-custom divider-light">
+            <div class="divider-custom-line"></div>
+        </div>
+        <p class="text-center">Enter the desired duration (in minutes):</p>
+
+        <!-- Form -->
+        <form method="POST" class="text-center">
+            <!-- Hidden fields to pass context -->
+            <input type="hidden" name="action" value="rent_pool" />
+            <input type="hidden" name="idu" value="{{ idu }}" />
+            <input type="hidden" name="idswp" value="{{ idswp }}" />
+
+            <!-- Duration Field -->
+            <div class="form-floating mb-3">
+                <input
+                    class="form-control"
+                    id="duration"
+                    name="duration"
+                    type="number"
+                    min="1"
+                    placeholder="Enter duration in minutes..."
+                    oninput="calculatePrice()" />
+                <label for="duration">Duration (in minutes)</label>
+            </div>
+
+            <!-- Price and Submit Button -->
+            <div class="d-flex justify-content-center align-items-center mt-4">
+                <button class="btn btn-light text-dark btn-xl me-3" type="submit">Validate</button>
+                <span class="badge bg-info text-dark fs-5" id="price-estimate">€ 0</span>
+            </div>
+        </form>
+    </div>
+</section>
+
+<!-- Price Formula Section -->
+<section class="page-section bg-light text-dark py-5">
+    <div class="container text-center">
+        <div class="card mx-auto" style="max-width: 600px;">
+            <div class="card-body">
+                <p class="mt-3 mb-0">
+                    <em>The price depends on the formula:</em>
+                </p>
+                <p class="mt-2 mb-0">
+                    <strong>price = hours_duration * ((10 + delta_hotspot) + 0.1 * Temp + 0.05 * Light)</strong>
+                </p>
+                <p class="mt-2">
+                    <em>where delta_hotspot = 5 if hotspot=True, otherwise 0.</em>
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    // JavaScript function to calculate and display the estimated price
+    function calculatePrice() {
+        const duration = document.getElementById('duration').value;
+        const delta_hotspot = 5; // Example value, adjust as needed
+        const avg_temp = 25; // Example value for average temperature
+        const avg_light = 500; // Example value for average luminosity
+
+        if (duration > 0) {
+            const hours_duration = duration / 60;
+            const price = hours_duration * ((10 + delta_hotspot) + 0.1 * avg_temp + 0.05 * avg_light);
+            document.getElementById('price-estimate').textContent = `€ ${price.toFixed(2)}`;
+        } else {
+            document.getElementById('price-estimate').textContent = '€ 0';
+        }
+    }
+</script>
+{% elif scenario == "rental_confirmed" %}
+<section class="page-section bg-light text-dark py-5" id="rental-confirmed">
+    <div class="container">
+        <!-- Title -->
+        <h2 class="text-center text-uppercase text-secondary">Rental Receipt</h2>
+        <div class="divider-custom divider-dark">
+            <div class="divider-custom-line"></div>
+        </div>
+
+        <!-- Receipt -->
+        <div class="card mx-auto shadow-lg" style="max-width: 600px; border: 2px solid #6c757d; border-radius: 10px;">
+            <div class="card-body p-4">
+                <h4 class="card-title text-center text-primary mb-4">Rental Confirmation</h4>
+
+                <!-- Rental Details -->
+                <div class="mb-3">
+                    <p class="mb-1"><strong>Swimming Pool ID:</strong> {{ idswp }}</p>
+                    <p class="mb-1"><strong>User:</strong> {{ idu }}</p>
+                    <p class="mb-1"><strong>Duration:</strong> {{ duration_minutes }} minutes</p>
+                    <p class="mb-1"><strong>Price:</strong> <span class="text-success">{{ price }} €</span></p>
+                    <p class="mb-1"><strong>Formula Used:</strong> <code>{{ formula }}</code></p>
+                </div>
+
+                <!-- Divider Line -->
+                <hr class="my-4" />
+
+                <!-- Confirmation Message -->
+                <p class="text-center text-muted">The rental information has been successfully saved in our database. Thank you for using our service!</p>
+            </div>
+
+
+        </div>
+    </div>
+</section>
+
+{% elif scenario == "error" %}
+<section class="page-section bg-light text-dark py-5" id="error">
+    <div class="container">
+        <h2 class="text-center">Error</h2>
+        <div class="divider-custom divider-light">
+            <div class="divider-custom-line"></div>
+        </div>
+        <p>{{ message }}</p>
+    </div>
+</section>
+
+{% else %}
+<section class="page-section bg-light text-dark py-5" id="unknown">
+    <div class="container">
+        <h2 class="text-center">Unknown Scenario</h2>
+        <div class="divider-custom divider-light">
+            <div class="divider-custom-line"></div>
+        </div>
+        <p>No specific display for this scenario.</p>
+    </div>
+</section>
+{% endif %}
+
+<!-- Footer -->
+<footer class="footer bg-dark text-center text-white py-4">
+    <div class="container">
+        <small>Pool Reservation - All Rights Reserved</small>
+    </div>
+</footer>
+
+<!-- Bootstrap JavaScript (Bundle) -->
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>

@@ -300,7 +300,7 @@ def openthedoor():
                 # mais gérons la possibilité
                 return render_template("open.html",
                                        scenario="error",
-                                       message="Utilisateur ou piscine introuvable en base.")
+                                       message="Pool not found in database.")
 
             pool_hotspot = pool_doc.get("hotspot", False)
             pool_avg_temp = pool_doc.get("average_temperature", 0)
@@ -377,7 +377,7 @@ def openthedoor():
                                    duration_minutes=duration_minutes,
                                    price=price,
                                    # Pour éventuellement réafficher la formule
-                                   formula="prix = durée_heures * ((10 + delta_hotspot) + 0.1*Temp + 0.05*Light)",
+                                   formula="price = duration_hours * ((10 + delta_hotspot) + 0.1*Temp + 0.05*Light))",
                                    user_doc=user_doc,
                                    pool_doc=pool_doc)
 
@@ -385,7 +385,7 @@ def openthedoor():
             # Action inconnue
             return render_template("open.html",
                                    scenario="error",
-                                   message="Action de formulaire inconnue.")
+                                   message="Unknown form action.")
 
 # -----------------------------------------------------------------------------
 @app.route("/users")

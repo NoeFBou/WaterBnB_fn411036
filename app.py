@@ -150,8 +150,9 @@ atexit.register(lambda: scheduler.shutdown())
 # -----------------------------------------------------------------------------
 @app.route('/')
 def hello_world():
-    # Page d’accueil minimale
-    return render_template('index.html')  
+    return render_template("open.html",
+                           scenario="error",
+                           message="Unknown form action.")
 
 # -----------------------------------------------------------------------------
 def compute_rental_price(duration_minutes, hotspot, avg_temp, avg_light):

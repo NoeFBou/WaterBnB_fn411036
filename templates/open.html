@@ -29,6 +29,22 @@
     </div>
 </header>
 
+<!-- Navigation-->
+<nav class="navbar navbar-expand-lg navbar-dark bg-secondary text-uppercase fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand" href="#page-top">ESP32 Admin Page</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link py-3 px-3 rounded" href="https://charts.mongodb.com/charts-project-0-cfqbhtu/public/dashboards/0f3a95b0-e295-4398-acdd-8b0b9cb9d55e">Statistics</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
 <!-- SCENARIOS -->
 {% if scenario == "pool_not_found" %}
 <section class="page-section bg-dark text-white py-5" id="network">
@@ -403,11 +419,20 @@
 {% else %}
 <section class="page-section bg-light text-dark py-5" id="unknown">
     <div class="container">
-        <h2 class="text-center">Unknown Scenario</h2>
-        <div class="divider-custom divider-light">
-            <div class="divider-custom-line"></div>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white text-center">
+                        <h4>Error</h4>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead text-center text-danger">
+                            Error.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <p>No specific display for this scenario.</p>
     </div>
 </section>
 {% endif %}

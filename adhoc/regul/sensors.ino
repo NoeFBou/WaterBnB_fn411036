@@ -50,7 +50,6 @@ void updateState() {
   if (jsonData.temperature >  jsonData.highThreshold) { //si au dessus de la limite haute
     jsonData.heaterState =true;
     jsonData.coolerState =false;
-    setAllPixelLedStrip(255, 0, 0);
     float fanSpeed = (jsonData.temperature - jsonData.highThreshold)/ tempSeuil; //vitesse progressive de ventilateur
     
     jsonData.fanSpeedObj = fanSpeed;
@@ -59,14 +58,12 @@ void updateState() {
   } else if (jsonData.temperature < jsonData.lowThreshold) { //si au dessus de la limite basse
     jsonData.heaterState =false;
     jsonData.coolerState =true;
-    setAllPixelLedStrip(10, 222, 37);
     jsonData.fanSpeedObj=0;
 
   } else { //si entre les deux
     jsonData.heaterState =false;
     jsonData.coolerState =false;
     jsonData.fanSpeedObj=0;
-    setAllPixelLedStrip(200, 43, 0);
   }
 
   if (jsonData.luminosity > jsonData.lightThreshold) { //detection incendie
@@ -123,4 +120,18 @@ void fanControl(float val){
 // Fonctions pour contrôler la led incendie
 void fireLed(int val){
   digitalWrite(FIRELEDPIN, val);
+}
+
+void handleLedColor() {
+  // Priorité au rouge si on est encore dans la fenêtre des 30s
+  if (millis() < redUntilTime) {
+    setAllPixelLedStrip(255, 0, 0);
+    return; 
+  }
+
+  if (jsonData.occupied) {
+    setAllPixelLedStrip(255, 255, 0);
+  } else {
+    setAllPixelLedStrip(0, 255, 0);
+  }
 }

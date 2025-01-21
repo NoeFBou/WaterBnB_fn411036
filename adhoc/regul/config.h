@@ -47,5 +47,7 @@ extern Adafruit_NeoPixel stripLed;
 
 extern unsigned long loop_period;
 extern float tempSeuil;
+extern unsigned long redUntilTime = 0;
+
 
 #endif // CONFIG_H

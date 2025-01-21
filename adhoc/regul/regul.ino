@@ -106,7 +106,7 @@ void setup() {
   mqttclient.setServer(mqtt_server, 1883);
   mqttclient.setCallback(mqtt_callback);
   mqttclient.setBufferSize(2048);
-jsonData.hotspot=true;
+  jsonData.hotspot=true;
   
 }
 
@@ -132,8 +132,8 @@ void loop() {
   publishData();
 
   mqttclient.loop();
+  handleLedColor();
 
-  updateHotspotStatus();
   
   delay(loop_period); // Attente avant la prochaine boucle
 }
@@ -205,105 +205,45 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length) {
     return;
   }
 
-  String id = doc["info"]["ident"].as<String>();
-  Serial.println(id);
+  String topicStr = String(topic);
+  String expectedTopic = "uca/iot/piscine/" + jsonData.identification + "/state";
 
-  // Ignore our own messages
-  if (id == jsonData.identification) {
-    return;
-  }
-  DeviceData device;
-  device.id = id;
-  float tempe = doc["status"]["temperature"].as<float>();
-  float lat = doc["location"]["gps"]["lat"].as<float>();
-  float lon = doc["location"]["gps"]["lon"].as<float>();
-  device.lastUpdateTime = millis();
-  Serial.println(id);
-  float distance = calculateDistance(jsonData.latitude, jsonData.longitude, lat, lon);
-  Serial.println(" distance : ");
-  Serial.println(distance);
-  if (distance <= 10.0){
-    if( tempe >= jsonData.temperature) {
-      jsonData.hotspot=false;
-    }
-    else{
-      jsonData.hotspot=true;
-    }
-  }
-  
-  
-  
-  
-  
-  
-  
-  // Update devicesData vector
- // bool found = false;
-/*
-  for (auto& d : devicesData) {
+  if (topicStr == expectedTopic) {
+    bool isOccupied = doc["occupied"] | false;
+    String infoMsg = doc["info"] | "";
 
-    if (d.id == device.id) {
-      d = device;
-      found = true;
-      break;
+    jsonData.occupied = isOccupied;
+
+    if (infoMsg.indexOf("a tenté") >= 0) {
+      redUntilTime = millis() + 30000UL;
+      Serial.println("[MQTT] Tentative d'accès alors que la piscine est occupée => LED Rouge 30s");
     }
-  }
-  
-  if (!found) {
     
-    devicesData.push_back(device);
-  }*/
-}
-
-void updateHotspotStatus() {
-  bool occ= true;
-  Serial.println("tzqt");
-
-  for (auto& device : devicesData) {
-    Serial.print("id : ");
-    Serial.println(device.id);
-    Serial.print("lat");
-    Serial.print(device.latitude); 
-    Serial.print("lon");
-    Serial.print(device.longitude);
-
-    float distance = calculateDistance(jsonData.latitude, jsonData.longitude, device.latitude, device.longitude);
-    Serial.print(" distance : ");
-    Serial.println(distance);
-    Serial.print(" temp : ");
-    Serial.println(device.temperature);
-    if (distance <= 10.0) {
-      // Compare temperatures
-      if (device.temperature >= jsonData.temperature) {
-        occ = false;
-        break;
+    handleLedColor();
+  }
+  
+  else {
+    String id = doc["info"]["ident"].as<String>();
+  
+    // Ignore our own messages
+    if (id == jsonData.identification) {
+      return;
+    }
+    DeviceData device;
+    device.id = id;
+    float tempe = doc["status"]["temperature"].as<float>();
+    float lat = doc["location"]["gps"]["lat"].as<float>();
+    float lon = doc["location"]["gps"]["lon"].as<float>();
+    device.lastUpdateTime = millis();
+    float distance = calculateDistance(jsonData.latitude, jsonData.longitude, lat, lon);
+  
+    if (distance <= 10.0){
+      if( tempe >= jsonData.temperature) {
+        jsonData.hotspot=false;
+      }
+      else{
+        jsonData.hotspot=true;
       }
     }
-    //jsonData.hotspot=occ;
   }
-  /*
-  for (auto& device : devicesData) {
-    // Check if device is within 10 km
-    
-    float distance = calculateDistance(jsonData.latitude, jsonData.longitude, device.latitude, device.longitude);
-    /*Serial.println(device.id);
-    Serial.println("lat ");
-    Serial.print(device.latitude);
-    Serial.print("lon ");
-    Serial.print(device.longitude);
-    Serial.print("dis ");
-
-    Serial.println(distance);
-    Serial.print("temp ");
-
-    Serial.println(device.temperature);
-
-    if (distance <= 10.0) {
-      // Compare temperatures
-      if (device.temperature >= jsonData.temperature) {
-        jsonData.hotspot = false;
-        break;
-      }
-    }
-  }*/
 }

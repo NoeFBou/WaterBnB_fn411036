@@ -17,5 +17,7 @@ void heaterControl(int val);
 void climControl(int val);
 void fanControl(int val);
 void fireLed(int val);
+void handleLedColor();
+
 
 #endif // SENSORS_H

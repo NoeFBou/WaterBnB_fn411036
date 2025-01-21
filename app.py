@@ -108,7 +108,6 @@ def release_expired_pools():
                     }
                 }
             )
-            # 2) Mettre à jour la piscine pour la libérer
             set_pool_occupied(pool_id, False)  # on appelle la fonction ci-dessous
 
             print(f"[Scheduler] Libération auto: Piscine {pool_id} libérée.")
@@ -446,6 +445,7 @@ def handle_mqtt_message(client, userdata, msg):
     except Exception as e:
         print(f"[MQTT] Erreur JSON: {e}")
         return
+    print(f"[MQTT] Message reçu: {dic}")
 
     pool_id = dic.get("info", {}).get("ident", "")
     temperature = dic.get("status", {}).get("temperature", 0)

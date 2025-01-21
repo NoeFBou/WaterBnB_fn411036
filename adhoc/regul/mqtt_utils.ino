@@ -11,13 +11,19 @@ void mqtt_reconnect(PubSubClient& client) {
     Serial.print("Attempting MQTT connection...");
     // Create a client ID
     String clientId = "ESP32Client-";
-    clientId += WiFi.macAddress();
+    clientId += WiFi.macAddress();  
 
     // Attempt to connect
     if (client.connect(clientId.c_str())) {
       Serial.println("connected");
       // Subscribe to the topic
       client.subscribe(mqtt_topic);
+
+      String stateTopic = "uca/iot/piscine/" + jsonData.identification + "/state";
+      client.subscribe(stateTopic.c_str());
+      Serial.print("Subscribed to: ");
+      Serial.println(stateTopic);
+    
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<!-- Noe Florence-->
+
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>ESP32 Admin Page</title>
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css" />
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/style.css" rel="stylesheet" />
+</head>
+<body id="page-top">
+<!-- Navigation-->
+<nav class="navbar navbar-expand-lg navbar-dark bg-secondary text-uppercase fixed-top" id="mainNav">
+    <div class="container">
+        <a class="navbar-brand" href="#page-top">ESP32 Admin Page</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            Menu
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link py-3 px-3 rounded" href="#about">About</a></li>
+                <li class="nav-item"><a class="nav-link py-3 px-3 rounded" href="#location">Location</a></li>
+                <li class="nav-item"><a class="nav-link py-3 px-3 rounded" href="#sensors">Sensors</a></li>
+                <li class="nav-item"><a class="nav-link py-3 px-3 rounded" href="#network">Network</a></li>
+                <li class="nav-item"><a class="nav-link py-3 px-3 rounded" href="#config">Config</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<header class="masthead bg-primary text-white text-center py-5 mt-5">
+    <div class="container d-flex align-items-center flex-column mt-5">
+        <img class="masthead-avatar mb-3" src="assets/img/avataaars.svg"  alt="Avatar" style="width: 20rem;" />
+        <h1 class="masthead-heading text-uppercase mb-0">ESP32</h1>
+    </div>
+</header>
+
+<section class="page-section bg-light text-dark py-5" id="about">
+    <div class="container">
+        <h2 class="text-center mb-3">About</h2>
+        <div class="divider-custom">
+            <div class="divider-custom-line"></div>
+            <div class="divider-custom-line"></div>
+
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4 mb-3 justify-content-center"><p class="lead justify-content-center" id="currentTime"> Uptime : %UPTIME% </p></div>
+            <div class="col-md-6 col-lg-4 mb-3 justify-content-center"><p class="lead justify-content-center"> Identification : %IDENTIFICATIONNAME% </p></div>
+            <div class="col-md-6 col-lg-4 mb-3 justify-content-center"><p class="lead justify-content-center"> User Name : %USERNAME% </p></div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section bg-primary text-white py-5" id="location">
+    <div class="container">
+        <h2 class="text-center mb-3">Location</h2>
+        <div class="divider-custom divider-light">
+            <div class="divider-custom-line"></div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-4 mb-3"><p class="lead"> Address : %WHERE% </p></div>
+            <div class="col-md-4 mb-3"><p class="lead"> Room : %ROOM% </p></div>
+            <div class="col-md-4 mb-3"><p class="lead"> Location : %LOCATION% </p></div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section text-secondary py-5" id="sensors">
+    <div class="container">
+        <h2 class="text-center">Sensors Status</h2>
+        <div class="divider-custom">
+            <div class="divider-custom-line"></div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4 mb-5">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="icon fas fa-sun"></i> Luminosity
+                    </div>
+                    <div class="card-body">
+                        <span id="light">%LIGHT% Lumen</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-5">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="icon fas fa-thermometer-half"></i> Temperature
+                    </div>
+                    <div class="card-body">
+                        <span id="temperature">%TEMPERATURE%°C</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-5">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="icon fas fa-fan"></i> Fan Speed
+                    </div>
+                    <div class="card-body">
+                        <span id="fanSpeed">%FAN%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="icon fas fa-exclamation-triangle"></i> High Threshold
+                    </div>
+                    <div class="card-body">
+                        <span>%HT% °C</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4  ">
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <i class="icon fas fa-bell"></i> Fire Detected
+                    </div>
+                    <div class="card-body">
+                        <span id="fire">%Fire%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-5 ">
+                <div class="card">
+                    <div class="card-header ">
+                        <i class="icon fas fa-exclamation-circle"></i> Low Threshold
+                    </div>
+                    <div class="card-body">
+                        <span>%LT% °C</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-5 ">
+                <div class="card">
+                    <div class="card-header bg-info">
+                        <i class="icon fas fa-snowflake "></i> Cooler State
+                    </div>
+                    <div class="card-body">
+                        <span id="coolerState">%COOLER%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4 mb-5 ">
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <i class="icon fas fa-fire "></i> Heater State
+                    </div>
+                    <div class="card-body">
+                        <span id="heaterState">%HEATER%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4  ">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="icon fas fa-tasks"></i> Regulation State
+                    </div>
+                    <div class="card-body">
+                        <span id="regulationState">%REGULATION%</span>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</section>
+
+<section class="page-section bg-primary text-white py-5" id="network">
+    <div class="container">
+        <h2 class="text-center">Network Link Status</h2>
+        <div class="divider-custom divider-light">
+            <div class="divider-custom-line"></div>
+        </div>
+        <div class="row justify-content-center text-black">
+            <div class="col-md-4 mb-5">
+                <div class="card">
+                    <div class="card-header bg-success text-white"><i class="fas fa-wifi"></i> WiFi SSID</div>
+                    <div class="card-body "><span>%SSID%</span></div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-5">
+                <div class="card">
+                    <div class="card-header bg-dark text-white"><i class="fas fa-address-card"></i> MAC Address</div>
+                    <div class="card-body "><span>%MAC%</span></div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-5">
+                <div class="card">
+                    <div class="card-header bg-danger text-white"><i class="fas fa-network-wired"></i> IP Address</div>
+                    <div class="card-body "><span>%IP%</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="page-section bg-light text-dark py-5" id="config">
+    <div class="container">
+        <h2 class="text-center">Periodic Status Report To:</h2>
+        <div class="divider-custom">
+            <div class="divider-custom-line"></div>
+        </div>
+        <form action="/target" method="post">
+            <div class="form-floating mb-3 ">
+                <input class="form-control" id="ip" name="ip" type="text" placeholder="Enter your IP Address..." />
+                <label for="ip">Current IP Address: %PRT_IP%</label>
+            </div>
+            <div class="form-floating mb-3">
+                <input class="form-control" id="port" name="port" type="text" placeholder="Enter the Port..." />
+                <label for="port">Current Port: %PRT_PORT%</label>
+            </div>
+            <div class="form-floating">
+                <input class="form-control" id="sp" name="sp" type="number" placeholder="Sampling Period" data-sb-validations="required" />
+                <label for="port">CURENT Sampling Period (in seconds) : %PRT_T%</label>
+            </div>
+
+            <button class="btn btn-primary btn-xl mt-3" id="submitButton" type="submit">Send</button>
+        </form>
+    </div>
+</section>
+
+<footer class="footer bg-dark text-center text-white py-4">
+    <div class="container"><small>ESP32 Admin Page - All Rights Reserved</small></div>
+</footer>
+<script src="js/bootstrap.bundle.min.js"></script>
+
+<script src="js/scripts.js"></script>
+
+</body>
+</html>

@@ -6,6 +6,7 @@ Mon application s'organise de la façon suivante :
 
 - **Côté serveur** : une application Flask + MongoDB gérant l’état des piscines et l’historique de location.
 - **Côté ESP32** : un code Arduino/PlatformIO qui envoie des mesures (température, luminosité, etc.) et reçoit des informations du serveur via MQTT.
+- **Côté Node-Red** : un dashboard qui permet de réserver une piscine.
 
 La communication entre l’ESP32 et le serveur se fait par **MQTT** :
 
@@ -17,6 +18,11 @@ La communication entre l’ESP32 et le serveur se fait par **MQTT** :
    - **Rouge** pendant 30 secondes après une tentative de réservation alors que la piscine était déjà occupée.
 
 **Attention** : Il y a une grosse latence au niveau des réponses envoyées de Render vers l’ESP (au moins 1 minute :( ...). Le backend fonctionne bien mieux en local que sur Render.
+
+
+liens Github du projet : 
+liens du dashboard MongoDB : 
+liens de render pour faire des testes : 
 
 ## Table des matières
 
@@ -33,13 +39,14 @@ La communication entre l’ESP32 et le serveur se fait par **MQTT** :
 ## 1. Architecture du projet
 
 Du côté de l'ESP, par rapport au dernier rendu, j'ai modifié les fichiers `regul.ino`, `sensors.ino` et `mqtt.ino`.
-
+Pour le dashboard sur node-red, j'ai juste rajouté la map avec la possibilité de réserver une piscine avec un liens vers mon render.
 ```
 ProjetPiscine/
 ├── static/                (contient les assets images, CSS de la page web)
 ├── app.py                 (Application Flask)
 ├── requirements.txt       (Librairies Python nécessaires)
 ├── templates/             (templates HTML de la page web)
+├── flow node-red.json     (dashboard node-red)
 └── adhoc/
     ├── regul/
     │   ├── regul.ino          (Code principal Arduino/PlatformIO)
@@ -117,7 +124,7 @@ Par défaut, le serveur tournera sur `http://127.0.0.1:5000`. Les **routes** pri
   - Si un utilisateur tente de réserver une piscine qui n'est pas dans la base de données, une page d'erreur s'affiche.
   - Si l'utilisateur et la piscine sont présents dans la base, une page de réservation s'affiche avec les informations de la piscine et l'utilisateur a la possibilité de renseigner la durée souhaitée pour la réservation dans le formulaire. Un prix fictif est affiché, calculé en fonction des caractéristiques de la piscine. L'utilisateur peut valider sa réservation en cliquant sur le bouton du formulaire. Une page de récapitulatif de la réservation s'affiche alors.
   - Si l'utilisateur et la piscine sont présents dans la base mais que la piscine est déjà réservée, la page affiche un timer indiquant dans combien de temps la piscine sera de nouveau disponible.
-  
+  - Un liens tester une reservation https://waterbnb-fn411036.onrender.com/open?idswp=P_22411036&idu=florence
 - **Historique** :
   - Les réservations sont stockées dans la collection `usage` de la base de données.
   - Les informations des piscines sont stockées en continu dans la base de données via MQTT. Si une piscine n'est pas encore présente, elle est ajoutée.

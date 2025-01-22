@@ -20,9 +20,9 @@ La communication entre l’ESP32 et le serveur se fait par **MQTT** :
 **Attention** : Il y a une grosse latence au niveau des réponses envoyées de Render vers l’ESP (au moins 1 minute :( ...). Le backend fonctionne bien mieux en local que sur Render.
 
 
-liens Github du projet : 
-liens du dashboard MongoDB : 
-liens de render pour faire des testes : 
+liens Github du projet : https://github.com/NoeFBou/WaterBnB_fn411036
+liens du dashboard MongoDB : https://charts.mongodb.com/charts-project-0-cfqbhtu/public/dashboards/0f3a95b0-e295-4398-acdd-8b0b9cb9d55e
+liens de render pour faire des tests :https://waterbnb-fn411036.onrender.com/open?idswp=P_22106244&idu=florence 
 
 ## Table des matières
 

@@ -66,8 +66,7 @@ app.config['MQTT_BROKER_PORT'] = 1883
 app.config['MQTT_TLS_ENABLED'] = False
 
 mqtt_client = Mqtt(app)
-# On garde un topic "général" si on souhaite écouter un flux global
-topicname = "uca/iot/piscine"
+topicname = "uca/iot/piscine" # Topic MQTT pour les messages des ESP32
 
 
 # ====================
@@ -78,12 +77,14 @@ class Config:
 
 
 app.config.from_object(Config())
-collname_telemetry = 'telemetry'
+collname_telemetry = 'telemetry' # Collection pour les données des ESP32
 telemetry_collection = db[collname_telemetry]
-scheduler = APScheduler()
+scheduler = APScheduler() # Initialisation de l'instance APScheduler pour le scheduler Flask
 scheduler.init_app(app)
 
-
+# -----------------------------------------------------------------------------
+# Fonctions pour le scheduler APScheduler (libération des piscines)
+# -----------------------------------------------------------------------------
 def release_expired_pools():
     """
     Parcourir les piscines occupées et les locations "en cours".
@@ -112,7 +113,7 @@ def release_expired_pools():
 
             print(f"[Scheduler] Libération auto: Piscine {pool_id} libérée.")
 
-
+# Lancer le scheduler
 scheduler.add_job(
     id='release_expired_pools_job',
     func=release_expired_pools,
@@ -124,6 +125,8 @@ scheduler.start()
 atexit.register(lambda: scheduler.shutdown())
 
 
+# -----------------------------------------------------------------------------
+# Fonctions utilitaires pour gérer l'occupation des piscines
 # -----------------------------------------------------------------------------
 def set_pool_occupied(pool_id, occupied, start_time=None, duration_minutes=0):
     """
@@ -183,6 +186,8 @@ def hello_world():
 
 
 # -----------------------------------------------------------------------------
+# Fonction pour calculer le prix de location
+# -----------------------------------------------------------------------------
 def compute_rental_price(duration_minutes, hotspot, avg_temp, avg_light):
     """
     Exemple de fonction pour calculer le prix de location.
@@ -202,11 +207,14 @@ def compute_rental_price(duration_minutes, hotspot, avg_temp, avg_light):
     return round(prix, 2)
 
 
+# -----------------------------------------------------------------------------
+# Route principale
+# -----------------------------------------------------------------------------
 @app.route("/open", methods=['GET', 'POST'])
 def openthedoor():
     """
     Exemple d'accès:
-      GET /open?idu=toto&idswp=P_123
+      GET /open?idswp=P_22106244&idu=florence
     """
     if request.method == 'GET':
         # Récupération des paramètres
@@ -226,6 +234,7 @@ def openthedoor():
                                    idu=idu,
                                    idswp=idswp)
 
+        # Récupérer les infos de la piscine
         pool_available = (pool_doc.get("occupied", True) == False)
         pool_hotspot = pool_doc.get("hotspot", False)
         pool_owner = pool_doc.get("user_name", "Unknown")
@@ -249,7 +258,7 @@ def openthedoor():
                                    pool_doc=pool_doc)
 
         # Cas où tout est correct : user existe et piscine existe
-        # Vérifions la disponibilité
+        # Vérifier si la piscine est occupée
         if not pool_available:
             # Piscine déjà occupée => calculer le temps restant
             if pool_start_occupied_time is not None:
@@ -311,6 +320,7 @@ def openthedoor():
             print(f"[OPEN - POST] Utilisateur {idu} créé en base.")
             return redirect(url_for("openthedoor", idu=idu, idswp=idswp))
 
+        # Location d'une piscine
         elif action == "rent_pool":
             duration_str = request.form.get("duration")
             duration_minutes = int(duration_str) if duration_str else 0
@@ -366,6 +376,7 @@ def openthedoor():
 
             print(f"[OPEN - POST] Occupation enregistrée. Prix={price}.")
 
+            # Retourner la page de confirmation
             return render_template("open.html",
                                    scenario="rental_confirmed",
                                    idu=idu,
@@ -375,6 +386,7 @@ def openthedoor():
                                    formula="price = durée_heures * ((10+delta_hotspot) + 0.1*Temp + 0.05*Light)",
                                    user_doc=user_doc,
                                    pool_doc=pool_doc)
+        # Action inconnue
         else:
             return render_template("open.html",
                                    scenario="error",
@@ -396,9 +408,6 @@ def lists_users():
 def publish_message():
     """
     Publication manuelle sur un topic
-    Exemple d’appel :
-      curl -X POST -H Content-Type:application/json \
-           -d "{\"topic\":\"monTopic\",\"msg\":\"hello MQTT\"}"  https://tonappli.fr/publish
     """
     request_data = request.get_json()
     topic = request_data['topic']
@@ -433,7 +442,8 @@ def handle_connect(client, userdata, flags, rc):
     else:
         print('[MQTT] Bad connection. Code:', rc)
 
-
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# MQTT callbacks
 @mqtt_client.on_message()
 def handle_mqtt_message(client, userdata, msg):
     """

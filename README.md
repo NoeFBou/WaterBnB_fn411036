@@ -106,21 +106,26 @@ Par défaut, le serveur tournera sur `http://127.0.0.1:5000`. Les **routes** pri
 
 ## 5. Fonctionnalités principales
 
-- **Gestion d’utilisateurs** en base (`users` collection).  
+- **Gestion d’utilisateurs** :  
   - Si un utilisateur tente de reserver une piscine en ouvrant le liens avec la route /open... avec un d'utilisateur qui n'est pas renseigné dans la base de donnée, l'utilisateur à la possibilité de d'ajouter son nom d'utilisateur via un bouton sur la page web. Il peut alors recharger la page pour effectuer la reservation(si la piscine existe dans la base)
-- **Gestion de piscines** (`pools` collection) :  
+- **Gestion de piscines** :  
   - Si  un utilisateur tente de reserver une piscine qui n'est pas dans la base de donnée, une page d'erreur s'affiche
-  - Si l'utilisateur
-- **Historique** de location (`usage` collection) :  
-  - Document qui stocke `user`, `pool_id`, `start`, `end`, `price`, etc.  
+  - Si l'utilisateur et la piscine sont présents dans la base, alors une page de réservation s'affiche avec les information de la piscine et l'utilisateur a la possibilié de rentrer combien de temps il souhaite réserver la piscine dans le formulaire. Il y a un prix fictif qui s'affiche calculer en fonction des carateristique de la piscine. L'utilisateur a la possibilité de valider sa réservation en cliquant sur le bouton du formulaire. Une page de récapitulatif de la réservation va alors s'afficher.
+  - Si l'utilisateur et la piscine sont présents dans la base mais que la piscine est déja réserver, la page affiche un timer indiquant dans combien de temps la piscine sera de nouveau dispoble.
+- **Historique** :  
+  - Les réservation sont stocker dans une base 'usage' de la base de donnée.  
+  - Les informations des piscines sont stoqués en continu dans la base de donné via MQTT. Si une piscine n'est pas encore présente, elle est rajouté
+- **Statistique** des piscines et des locations :  
+  - Le dashboard MongoDB avec les statistiques peut etre accessible via la page web par n'importe qui en cliquant sur le bouton statistique ou bien via se lien :
+    https://charts.mongodb.com/charts-project-0-cfqbhtu/public/dashboards/0f3a95b0-e295-4398-acdd-8b0b9cb9d55e
 - **Tâche planifiée** (APS-Scheduler) pour libérer les piscines dont la location est expirée => publication MQTT `occupied=False`.  
 - **ESP32** :  
   - Lit la température (DallasTemperature) et la luminosité (analogique).  
-  - Publie via MQTT (`"uca/iot/piscine"`) un JSON complet (identifiant de la piscine, user, etc.).  
+  - Publie via MQTT (`"uca/iot/piscine"`) le JSON complet (identifiant de la piscine, user, etc.).  
   - Souscrit également à `"uca/iot/piscine/<pool_id>/state"` :  
     - **Vert** si `occupied == false`.  
     - **Jaune** si `occupied == true`.  
-    - **Rouge** 30 s si un `info` signale un accès infructueux.  
+    - **Rouge** 30s si un `info` signale un accès infructueux.  
 
 ---
 

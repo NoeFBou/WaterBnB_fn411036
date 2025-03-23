@@ -1,3 +1,7 @@
+Projet réalisé dans le cadre du cours d'IOT au 1er semestre de mon Master 1.
+
+----------------
+
 # README – Projet WaterBnB / Piscine connectée
 
 Bonjour,
